@@ -1,34 +1,49 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
-export function useFetch(fetchFn) {
+/**
+ * Reusable fetch hook with Loading / Success / Error states
+ * and AbortController cleanup to avoid race conditions.
+ */
+export function useFetch(fetcher, deps = []) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  function retry() {
+    setReloadKey((k) => k + 1);
+  }
 
   useEffect(() => {
-    let isMounted = true;
-    setLoading(true);
-    
-    fetchFn()
-      .then((res) => {
-        if (isMounted) {
-          setData(res);
-          setError(null);
+    const ctrl = new AbortController();
+    let active = true;
+
+    async function run() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const result = await fetcher(ctrl.signal);
+        if (active) setData(result);
+      } catch (err) {
+        if (err?.name === "AbortError") return;
+        if (active) {
+          setError(err?.message || "Something went wrong");
+          setData(null);
         }
-      })
-      .catch((err) => {
-        if (isMounted) {
-          setError(err.message || "Something went wrong while fetching data.");
-        }
-      })
-      .finally(() => {
-        if (isMounted) setLoading(false);
-      });
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    run();
 
     return () => {
-      isMounted = false;
+      active = false;
+      ctrl.abort();
     };
-  }, [fetchFn]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [...deps, reloadKey]);
 
-  return { data, loading, error };
+  return { data, loading, error, retry };
 }
