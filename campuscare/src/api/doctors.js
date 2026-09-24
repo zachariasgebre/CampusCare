@@ -16,7 +16,9 @@ const DELAY_MS = 700;
  * Toggle to practice the error UI:
  * set `?fail=1` on /doctors or call fetchDoctors({ fail: true })
  */
-export async function fetchDoctors({ fail = false, signal } = {}) {
+export async function fetchDoctors(opts = {}) {
+  const signal = opts instanceof AbortSignal ? opts : opts?.signal;
+  const fail = opts?.fail || false;
   await wait(DELAY_MS, signal);
 
   if (fail) {
