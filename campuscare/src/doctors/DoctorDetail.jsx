@@ -42,7 +42,7 @@ function DoctorDetail() {
 
       <h3>Open slots</h3>
       <ul className="slot-list">
-        {(doctor.slots || []).map((slot) => (
+        {doctor.slots.map((slot) => (
           <li key={slot}>{slot}</li>
         ))}
       </ul>

@@ -1,13 +1,21 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { fetchDoctorById } from "../api/doctors";
+import { useFetch } from "../hooks/useFetch";
 import { useAuth } from "../auth/AuthContext";
 import { useAppointmentsStore } from "../appointments/appointmentsStore";
-import { useFetch } from "../hooks/useFetch";
 import { validateBooking } from "./validate";
 import Spinner from "../ui/Spinner";
 import ErrorNote from "../ui/ErrorNote";
 import EmptyState from "../ui/EmptyState";
+
+const INITIAL = {
+  fullName: "",
+  studentId: "",
+  phone: "",
+  slot: "",
+  reason: "",
+};
 
 function Booking() {
   const { id } = useParams();
@@ -22,36 +30,28 @@ function Booking() {
   );
 
   const [form, setForm] = useState(() => ({
+    ...INITIAL,
     fullName: user?.name || "",
     studentId: user?.studentId || "",
     phone: user?.phone || "",
-    slot: "",
-    reason: "",
   }));
-
   const [touched, setTouched] = useState({});
-  const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+
+  const errors = useMemo(() => validateBooking(form), [form]);
+  const isValid = Object.keys(errors).length === 0;
 
   function handleChange(e) {
     const { name, value } = e.target;
-    const nextForm = { ...form, [name]: value };
-    setForm(nextForm);
-    if (touched[name]) {
-      setErrors(validateBooking(nextForm));
-    }
+    setForm((f) => ({ ...f, [name]: value }));
   }
 
-  function handleSlotSelect(slot) {
-    const nextForm = { ...form, slot };
-    setForm(nextForm);
-    setTouched((t) => ({ ...t, slot: true }));
-    setErrors(validateBooking(nextForm));
+  function markTouched(field) {
+    setTouched((t) => ({ ...t, [field]: true }));
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    const validationErrors = validateBooking(form);
-    setErrors(validationErrors);
     setTouched({
       fullName: true,
       studentId: true,
@@ -60,35 +60,43 @@ function Booking() {
       reason: true,
     });
 
-    if (Object.keys(validationErrors).length > 0) return;
+    if (!isValid || submitting || !doctor) return;
 
-    const apt = {
-      doctorId: doctor.id,
-      doctorName: doctor.name,
-      department: doctor.department,
-      slot: form.slot,
-      fullName: form.fullName.trim(),
-      studentId: form.studentId.trim(),
-      phone: form.phone.trim(),
-      reason: form.reason.trim(),
-      fee: doctor.fee,
-    };
+    setSubmitting(true);
+    try {
+      // Simulate a short submit delay (clinic desk stamp)
+      await new Promise((r) => setTimeout(r, 400));
 
-    addAppointment(apt);
-    navigate("/confirmation", { state: { appointment: apt } });
+      const appointment = {
+        doctorId: doctor.id,
+        doctorName: doctor.name,
+        department: doctor.department,
+        fee: doctor.fee,
+        fullName: form.fullName.trim(),
+        studentId: form.studentId.trim(),
+        phone: form.phone.trim(),
+        slot: form.slot,
+        reason: form.reason.trim(),
+      };
+
+      addAppointment(appointment);
+      navigate("/confirmation", { replace: true, state: { appointment } });
+    } finally {
+      setSubmitting(false);
+    }
   }
 
-  if (loading) return <Spinner label="Loading clinic booking form…" />;
+  if (loading) return <Spinner label="Preparing booking form…" />;
   if (error) return <ErrorNote message={error} onRetry={retry} />;
 
   if (!doctor) {
     return (
       <EmptyState
-        title="Doctor not found"
+        title="Cannot book this doctor"
         message={`No clinician matches id ${id}.`}
         action={
           <Link className="btn" to="/doctors">
-            Back to doctors
+            Choose another doctor
           </Link>
         }
       />
@@ -97,103 +105,134 @@ function Booking() {
 
   return (
     <section className="card booking-card">
-      <p className="eyebrow">Booking appointment</p>
-      <h2>Schedule visit with {doctor.name}</h2>
+      <p className="eyebrow">Booking</p>
+      <h2>Book {doctor.name}</h2>
       <p className="muted">
-        {doctor.department} · Consultation fee: <strong>{doctor.fee} ETB</strong>
+        {doctor.department} · consult fee {doctor.fee} ETB
       </p>
 
       <form className="booking-form" onSubmit={handleSubmit} noValidate>
-        <label htmlFor="fullName">Student full name</label>
-        <input
+        <Field
           id="fullName"
+          label="Full name"
           name="fullName"
           value={form.fullName}
           onChange={handleChange}
-          onBlur={() => setTouched((t) => ({ ...t, fullName: true }))}
-          required
+          onBlur={() => markTouched("fullName")}
+          error={touched.fullName && errors.fullName}
         />
-        {touched.fullName && errors.fullName && (
-          <p className="field-error" role="alert">{errors.fullName}</p>
-        )}
 
-        <label htmlFor="studentId">Student ID</label>
-        <input
+        <Field
           id="studentId"
+          label="Student ID"
           name="studentId"
           value={form.studentId}
           onChange={handleChange}
-          onBlur={() => setTouched((t) => ({ ...t, studentId: true }))}
-          placeholder="e.g. ETS-1234/15"
-          required
+          onBlur={() => markTouched("studentId")}
+          error={touched.studentId && errors.studentId}
         />
-        {touched.studentId && errors.studentId && (
-          <p className="field-error" role="alert">{errors.studentId}</p>
-        )}
 
-        <label htmlFor="phone">Mobile (TeleBirr)</label>
-        <input
+        <Field
           id="phone"
+          label="TeleBirr / mobile number"
           name="phone"
           type="tel"
           value={form.phone}
           onChange={handleChange}
-          onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
-          placeholder="09xxxxxxxx"
-          required
+          onBlur={() => markTouched("phone")}
+          error={touched.phone && errors.phone}
+          hint="09xxxxxxxx or +2519xxxxxxxx"
         />
-        {touched.phone && errors.phone && (
-          <p className="field-error" role="alert">{errors.phone}</p>
-        )}
 
-        <div>
-          <label style={{ display: "block", marginBottom: "0.4rem" }}>
-            Available time slot
-          </label>
-          <div className="slots-grid">
-            {(doctor.slots || []).map((s) => (
-              <button
-                key={s}
-                type="button"
-                className={`slot-btn ${form.slot === s ? "selected" : ""}`}
-                onClick={() => handleSlotSelect(s)}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-          {touched.slot && errors.slot && (
-            <p className="field-error" style={{ marginTop: "0.5rem" }} role="alert">
-              {errors.slot}
-            </p>
-          )}
-        </div>
+        <label htmlFor="slot">Appointment slot</label>
+        <select
+          id="slot"
+          name="slot"
+          value={form.slot}
+          onChange={handleChange}
+          onBlur={() => markTouched("slot")}
+          aria-invalid={!!(touched.slot && errors.slot)}
+          aria-describedby={touched.slot && errors.slot ? "slot-error" : undefined}
+        >
+          <option value="">Select a slot</option>
+          {doctor.slots.map((slot) => (
+            <option key={slot} value={slot}>
+              {slot}
+            </option>
+          ))}
+        </select>
+        {touched.slot && errors.slot && (
+          <p id="slot-error" className="field-error" role="alert">
+            {errors.slot}
+          </p>
+        )}
 
         <label htmlFor="reason">Reason for visit</label>
         <textarea
           id="reason"
           name="reason"
-          rows="3"
+          rows={4}
           value={form.reason}
           onChange={handleChange}
-          onBlur={() => setTouched((t) => ({ ...t, reason: true }))}
-          placeholder="Describe your symptoms (8+ characters)…"
-          required
+          onBlur={() => markTouched("reason")}
+          aria-invalid={!!(touched.reason && errors.reason)}
+          aria-describedby={
+            touched.reason && errors.reason ? "reason-error" : undefined
+          }
         />
         {touched.reason && errors.reason && (
-          <p className="field-error" role="alert">{errors.reason}</p>
+          <p id="reason-error" className="field-error" role="alert">
+            {errors.reason}
+          </p>
         )}
 
-        <div className="card-actions" style={{ marginTop: "1rem" }}>
-          <button type="submit" className="btn">
-            Confirm & Book ({doctor.fee} ETB)
-          </button>
-          <Link className="btn ghost" to={`/doctors/${doctor.id}`}>
-            Cancel
-          </Link>
-        </div>
+        <button
+          type="submit"
+          className="btn"
+          disabled={!isValid || submitting}
+        >
+          {submitting ? "Submitting…" : "Confirm booking"}
+        </button>
       </form>
     </section>
+  );
+}
+
+function Field({
+  id,
+  label,
+  name,
+  value,
+  onChange,
+  onBlur,
+  error,
+  type = "text",
+  hint,
+}) {
+  return (
+    <>
+      <label htmlFor={id}>{label}</label>
+      <input
+        id={id}
+        name={name}
+        type={type}
+        value={value}
+        onChange={onChange}
+        onBlur={onBlur}
+        aria-invalid={!!error}
+        aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
+      />
+      {hint && !error && (
+        <p id={`${id}-hint`} className="field-hint">
+          {hint}
+        </p>
+      )}
+      {error && (
+        <p id={`${id}-error`} className="field-error" role="alert">
+          {error}
+        </p>
+      )}
+    </>
   );
 }
 
