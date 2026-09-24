@@ -16,10 +16,12 @@ function Booking() {
   const { user } = useAuth();
   const addAppointment = useAppointmentsStore((s) => s.addAppointment);
 
-  const { data: doctor, loading, error, retry } = useFetch(
-    (signal) => fetchDoctorById(doctorId, { signal }),
-    [doctorId]
-  );
+  const {
+    data: doctor,
+    loading,
+    error,
+    retry,
+  } = useFetch((signal) => fetchDoctorById(doctorId, { signal }), [doctorId]);
 
   const [form, setForm] = useState(() => ({
     fullName: user?.name || "",
@@ -100,7 +102,8 @@ function Booking() {
       <p className="eyebrow">Booking appointment</p>
       <h2>Schedule visit with {doctor.name}</h2>
       <p className="muted">
-        {doctor.department} · Consultation fee: <strong>{doctor.fee} ETB</strong>
+        {doctor.department} · Consultation fee:{" "}
+        <strong>{doctor.fee} ETB</strong>
       </p>
 
       <form className="booking-form" onSubmit={handleSubmit} noValidate>
@@ -114,7 +117,9 @@ function Booking() {
           required
         />
         {touched.fullName && errors.fullName && (
-          <p className="field-error" role="alert">{errors.fullName}</p>
+          <p className="field-error" role="alert">
+            {errors.fullName}
+          </p>
         )}
 
         <label htmlFor="studentId">Student ID</label>
@@ -128,7 +133,9 @@ function Booking() {
           required
         />
         {touched.studentId && errors.studentId && (
-          <p className="field-error" role="alert">{errors.studentId}</p>
+          <p className="field-error" role="alert">
+            {errors.studentId}
+          </p>
         )}
 
         <label htmlFor="phone">Mobile (TeleBirr)</label>
@@ -143,7 +150,9 @@ function Booking() {
           required
         />
         {touched.phone && errors.phone && (
-          <p className="field-error" role="alert">{errors.phone}</p>
+          <p className="field-error" role="alert">
+            {errors.phone}
+          </p>
         )}
 
         <div>
@@ -163,7 +172,11 @@ function Booking() {
             ))}
           </div>
           {touched.slot && errors.slot && (
-            <p className="field-error" style={{ marginTop: "0.5rem" }} role="alert">
+            <p
+              className="field-error"
+              style={{ marginTop: "0.5rem" }}
+              role="alert"
+            >
               {errors.slot}
             </p>
           )}
@@ -181,7 +194,9 @@ function Booking() {
           required
         />
         {touched.reason && errors.reason && (
-          <p className="field-error" role="alert">{errors.reason}</p>
+          <p className="field-error" role="alert">
+            {errors.reason}
+          </p>
         )}
 
         <div className="card-actions" style={{ marginTop: "1rem" }}>
