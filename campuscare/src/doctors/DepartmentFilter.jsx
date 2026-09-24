@@ -1,11 +1,11 @@
-function DepartmentFilter({ departments = [], value, onChange }) {
+function DepartmentFilter({ departments, value, onChange }) {
   return (
-    <div className="filter-bar" role="toolbar" aria-label="Department filters">
+    <div className="chip-row" role="group" aria-label="Filter by department">
       {departments.map((dept) => (
         <button
           key={dept}
           type="button"
-          className={`filter-btn ${value === dept ? "active" : ""}`}
+          className={`chip ${value === dept ? "active" : ""}`}
           onClick={() => onChange(dept)}
         >
           {dept}
