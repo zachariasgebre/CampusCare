@@ -4,11 +4,11 @@ function Home() {
   return (
     <div className="home-container">
       <section className="hero card">
-        <p className="eyebrow">Campus clinic · Student Portal</p>
+        <p className="eyebrow">Campus Clinic · Student Healthcare</p>
         <h2>Book a student health visit in minutes</h2>
         <p>
-          CampusCare helps you browse doctors by department, open clinician profiles,
-          pick an available slot, and confirm a validated booking — skip the waiting line on a busy day.
+          CampusCare helps you browse clinic doctors by department, view credentials,
+          select open slots, and confirm your booking — skip the waiting lines.
         </p>
         <div className="hero-actions">
           <Link className="btn" to="/doctors">
@@ -72,15 +72,15 @@ function Home() {
         </div>
       </section>
 
-      <section className="card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1.25rem", background: "#fef2f2", borderColor: "#fecaca" }}>
+      <section className="card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1.25rem", borderLeft: "4px solid #ef4444" }}>
         <div>
-          <h3 style={{ color: "#991b1b" }}>Need urgent medical assistance?</h3>
-          <p className="muted" style={{ margin: 0, color: "#7f1d1d" }}>
+          <h3 style={{ color: "#b91c1c", margin: "0 0 0.35rem" }}>Need urgent medical assistance?</h3>
+          <p className="muted" style={{ margin: 0 }}>
             The emergency triage room in Clinic Block A is open 24/7 for acute symptoms.
           </p>
         </div>
         <a href="tel:991" className="btn" style={{ backgroundColor: "#dc2626" }}>
-          Emergency Hotline: 991
+          Emergency Call: 991
         </a>
       </section>
     </div>
