@@ -20,15 +20,10 @@ function Home() {
           <Link className="btn ghost" to="/appointments">
             My Appointments
           </Link>
+          <Link className="btn ghost" to="/doctor-dashboard">
+            🩺 Doctor Portal
+          </Link>
         </div>
-        <ol className="journey" aria-label="Student booking journey">
-          <li>1. Home</li>
-          <li>2. Doctors</li>
-          <li>3. Filter</li>
-          <li>4. Details</li>
-          <li>5. Booking</li>
-          <li>6. Confirmation</li>
-        </ol>
       </section>
 
       <section className="feature-cards">

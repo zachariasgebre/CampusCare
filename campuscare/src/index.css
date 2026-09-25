@@ -205,15 +205,6 @@ p {
   font-size: 0.9rem;
 }
 
-.hint {
-  margin-top: 1rem;
-  color: var(--text-muted);
-  font-size: 0.85rem;
-  background: var(--primary-light);
-  padding: 0.6rem 0.85rem;
-  border-radius: 8px;
-  border-left: 3px solid var(--primary);
-}
 
 /* Cards */
 .card {

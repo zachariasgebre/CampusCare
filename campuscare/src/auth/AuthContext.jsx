@@ -16,14 +16,31 @@ function readSession() {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => readSession());
 
-  const value = useMemo(
-    () => ({
+  const value = useMemo(() => {
+    const isDoctor = Boolean(user && (user.role === "doctor" || user.doctorId));
+
+    return {
       user,
+      isDoctor,
       login: (profile) => {
         const next = {
+          role: "student",
           name: profile.name.trim(),
           phone: profile.phone.trim(),
           studentId: profile.studentId.trim(),
+        };
+        localStorage.setItem(SESSION_KEY, JSON.stringify(next));
+        setUser(next);
+      },
+      loginDoctor: (doctorProfile) => {
+        const next = {
+          role: "doctor",
+          id: doctorProfile.id,
+          doctorId: doctorProfile.doctorId || `DOC-${doctorProfile.id}`,
+          name: doctorProfile.name,
+          title: doctorProfile.title,
+          department: doctorProfile.department,
+          phone: doctorProfile.phone || doctorProfile.mobile || "",
         };
         localStorage.setItem(SESSION_KEY, JSON.stringify(next));
         setUser(next);
@@ -32,9 +49,8 @@ export function AuthProvider({ children }) {
         localStorage.removeItem(SESSION_KEY);
         setUser(null);
       },
-    }),
-    [user]
-  );
+    };
+  }, [user]);
 
   return (
     <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

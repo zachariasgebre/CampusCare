@@ -1,0 +1,571 @@
+/* ==========================================================================
+   Multi-Role Login (Student & Doctor) Styles
+   ========================================================================== */
+
+.login-page-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem 1rem 3rem;
+  width: 100%;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 440px !important;
+  margin: 0 auto !important;
+  padding: 2.25rem 2rem !important;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px -2px rgba(37, 99, 235, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+}
+
+.login-card h2 {
+  margin: 0.15rem 0 0.5rem !important;
+  font-size: 1.6rem !important;
+  font-weight: 800;
+  color: #1e3a8a;
+  letter-spacing: -0.02em;
+}
+
+/* Segmented Control / Role Switcher Tabs */
+.login-role-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+  gap: 4px;
+}
+
+.login-tab {
+  padding: 0.6rem 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.login-tab:hover:not(.active) {
+  color: var(--primary);
+}
+
+.login-tab.active {
+  background: #ffffff;
+  color: var(--primary);
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.login-submit-btn {
+  width: 100%;
+  margin-top: 0.65rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: 8px;
+}
+
+/* Doctor Chip in Header */
+.doctor-chip {
+  background: #ecfdf5 !important;
+  color: #065f46 !important;
+  border-color: #a7f3d0 !important;
+}
+
+/* ==========================================================================
+   Doctor Dashboard Layout & Components
+   ========================================================================== */
+
+.doctor-dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Doctor Identity Banner */
+.doctor-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+  border: 1.5px solid var(--primary-border);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (min-width: 840px) {
+  .doctor-banner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.doctor-banner-main {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.doctor-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  background: var(--primary-light);
+  border: 1.5px solid var(--primary-border);
+  border-radius: 14px;
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.doctor-banner-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.25rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.staff-badge {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.dept-badge {
+  background: var(--primary-light);
+  color: var(--primary-hover);
+  border: 1px solid var(--primary-border);
+}
+
+.doctor-banner-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 260px;
+}
+
+.control-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.doctor-select-input {
+  padding: 0.55rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: #ffffff;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.doctor-select-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.banner-quick-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* KPI Metrics Grid */
+.dashboard-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.metric-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.15rem 1.25rem;
+  background: #ffffff;
+}
+
+.metric-icon {
+  font-size: 2rem;
+  background: var(--bg-main);
+  padding: 0.5rem;
+  border-radius: 10px;
+}
+
+.metric-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-label {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.metric-value {
+  margin: 0.2rem 0 0;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  line-height: 1.1;
+}
+
+.metric-value.highlight {
+  color: var(--primary);
+}
+
+.metric-value.success {
+  color: #10b981;
+}
+
+.metric-value.price-metric {
+  color: #0284c7;
+}
+
+/* Search & Filter Controls */
+.dashboard-controls-card {
+  padding: 1rem 1.25rem;
+  background: #ffffff;
+}
+
+.controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.search-box {
+  position: relative;
+  flex: 1 1 280px;
+}
+
+.dashboard-search-input {
+  width: 100%;
+  padding: 0.6rem 2.2rem 0.6rem 0.9rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-main);
+  color: var(--text-dark);
+  font-size: 0.9rem;
+}
+
+.dashboard-search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.85rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.filter-item select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--text-dark);
+  font-size: 0.85rem;
+}
+
+/* Appointment Roster List */
+.roster-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.appointment-row-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1.25rem;
+  border-left: 4px solid var(--primary);
+  transition: all 0.2s ease;
+}
+
+.appointment-row-card.status-completed {
+  border-left-color: #10b981;
+}
+
+.appointment-row-card.status-cancelled {
+  border-left-color: #94a3b8;
+  opacity: 0.85;
+}
+
+.appointment-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.patient-identity {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.patient-avatar {
+  width: 40px;
+  height: 40px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--primary-border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.patient-name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.patient-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.15rem;
+}
+
+.student-id-tag {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-main);
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+}
+
+.patient-phone {
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.appointment-status-block {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.status-badge.confirmed {
+  background: #eff6ff;
+  color: var(--primary);
+  border: 1px solid var(--primary-border);
+}
+
+.status-badge.completed {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.status-badge.cancelled {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+}
+
+.slot-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
+  color: var(--text-dark);
+}
+
+.assigned-doctor-line {
+  font-size: 0.85rem;
+  color: var(--primary-hover);
+  background: var(--primary-light);
+  padding: 0.35rem 0.7rem;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* Appointment Body */
+.appointment-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  background: var(--bg-main);
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.reason-label,
+.notes-label {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.reason-text {
+  margin: 0.2rem 0 0;
+  font-size: 0.92rem;
+  color: var(--text-body);
+}
+
+.clinical-notes-preview {
+  margin-top: 0.35rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.notes-text {
+  margin: 0.2rem 0 0;
+  font-size: 0.9rem;
+  color: #1e3a8a;
+  background: #ffffff;
+  padding: 0.4rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid var(--primary-border);
+}
+
+/* Clinical Notes Editor */
+.notes-editor-box {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.notes-textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--primary-border);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background: #ffffff;
+}
+
+.notes-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.notes-editor-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Appointment Footer */
+.appointment-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.fee-info {
+  font-size: 0.95rem;
+}
+
+.action-buttons-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.status-btn-complete {
+  background: #10b981;
+}
+
+.status-btn-complete:hover:not(:disabled) {
+  background: #059669;
+}
+
+.status-btn-cancel {
+  color: #ef4444 !important;
+  border-color: #fca5a5 !important;
+}
+
+.status-btn-cancel:hover:not(:disabled) {
+  background: #fef2f2 !important;
+}
