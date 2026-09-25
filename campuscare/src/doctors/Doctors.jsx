@@ -38,13 +38,7 @@ function Doctors() {
           <p className="eyebrow">Doctors</p>
           <h2>Find a campus clinician</h2>
         </div>
-        <p className="muted">
-          Filter lives in the URL:{" "}
-          <code>
-            ?department=
-            {department === "All" ? "…" : department}
-          </code>
-        </p>
+        
       </div>
 
       <DepartmentFilter
