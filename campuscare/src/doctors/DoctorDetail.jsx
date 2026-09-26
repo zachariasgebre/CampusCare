@@ -37,6 +37,8 @@ function DoctorDetail() {
       <h2>{doctor.name}</h2>
       <p className="muted">
         {doctor.title} · {doctor.years} years · {doctor.fee} ETB consult
+        {doctor.doctorId ? ` · ID: ${doctor.doctorId}` : ""}
+        {doctor.mobile || doctor.phone ? ` · 📞 ${doctor.mobile || doctor.phone}` : ""}
       </p>
       <p>{doctor.bio}</p>
 
@@ -51,15 +53,13 @@ function DoctorDetail() {
         <Link className="btn" to={`/booking/${doctor.id}`}>
           Book this doctor
         </Link>
+        <Link className="btn ghost" to={`/doctor-dashboard/${doctor.id}`}>
+          View Doctor Schedule
+        </Link>
         <Link className="btn ghost" to="/doctors">
           Back to list
         </Link>
       </div>
-
-      <p className="hint">
-        Tip: <code>useParams()</code> gives a string — we convert with{" "}
-        <code>Number(id)</code>.
-      </p>
     </section>
   );
 }
