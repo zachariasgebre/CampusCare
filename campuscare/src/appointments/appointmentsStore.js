@@ -33,13 +33,6 @@ export const useAppointmentsStore = create(
           ),
         })),
 
-      seedDemoAppointments: (demoList) =>
-        set((state) => {
-          const existingIds = new Set(state.appointments.map((a) => a.id));
-          const toAdd = demoList.filter((d) => !existingIds.has(d.id));
-          return { appointments: [...toAdd, ...state.appointments] };
-        }),
-
       clearAppointments: () => set({ appointments: [] }),
     }),
     { name: "campuscare-appointments" }
