@@ -1,113 +1,34 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { useAppointmentsStore } from "../appointments/appointmentsStore";
-import { fetchDoctors } from "../api/doctors";
+import { fetchDoctorById } from "../api/doctors";
+import { useFetch } from "../hooks/useFetch";
 import Spinner from "../ui/Spinner";
+import ErrorNote from "../ui/ErrorNote";
 import EmptyState from "../ui/EmptyState";
-
-const DEMO_SEED_APPOINTMENTS = [
-  {
-    id: 1711200001,
-    doctorId: 1,
-    doctorName: "Dr. Aster Lemma",
-    doctorDepartment: "General Practice",
-    slot: "09:00 AM",
-    fee: 150,
-    studentName: "Abebe Bekele",
-    fullName: "Abebe Bekele",
-    studentId: "ATR/1042/14",
-    phone: "0911223344",
-    reason: "Severe cough, fever, and acute headache for the past 3 days.",
-    status: "confirmed",
-    clinicalNotes: "",
-    createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
-  },
-  {
-    id: 1711200002,
-    doctorId: 1,
-    doctorName: "Dr. Aster Lemma",
-    doctorDepartment: "General Practice",
-    slot: "10:30 AM",
-    fee: 150,
-    studentName: "Tigist Alemu",
-    fullName: "Tigist Alemu",
-    studentId: "MED/5012/15",
-    phone: "0922334455",
-    reason: "Asthma inhaler refill and chest tightness review before exam week.",
-    status: "completed",
-    clinicalNotes: "Inhaler renewed for 30 days. Peak flow normal (420 L/min).",
-    createdAt: new Date(Date.now() - 3600000 * 8).toISOString(),
-  },
-  {
-    id: 1711200003,
-    doctorId: 2,
-    doctorName: "Dr. Samuel Tadesse",
-    doctorDepartment: "Dermatology",
-    slot: "09:30 AM",
-    fee: 200,
-    studentName: "Dawit Haile",
-    fullName: "Dawit Haile",
-    studentId: "ENG/8821/13",
-    phone: "0933445566",
-    reason: "Sudden facial allergic rash and itchy eczema after dorm laundry.",
-    status: "confirmed",
-    clinicalNotes: "",
-    createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-  },
-  {
-    id: 1711200004,
-    doctorId: 3,
-    doctorName: "Dr. Hana Girma",
-    doctorDepartment: "Mental Health",
-    slot: "08:30 AM",
-    fee: 150,
-    studentName: "Selamawit Kebede",
-    fullName: "Selamawit Kebede",
-    studentId: "BUS/3309/14",
-    phone: "0944556677",
-    reason: "Exam stress counseling and persistent insomnia management.",
-    status: "confirmed",
-    clinicalNotes: "",
-    createdAt: new Date(Date.now() - 3600000 * 5).toISOString(),
-  },
-  {
-    id: 1711200005,
-    doctorId: 4,
-    doctorName: "Dr. Yared Assefa",
-    doctorDepartment: "General Practice",
-    slot: "11:30 AM",
-    fee: 150,
-    studentName: "Henok Tesfaye",
-    fullName: "Henok Tesfaye",
-    studentId: "CS/2045/15",
-    phone: "0955667788",
-    reason: "Routine sports clearance medical certificate for campus soccer team.",
-    status: "completed",
-    clinicalNotes: "Vitals normal (BP 118/76). Cleared for sports activities.",
-    createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-  },
-  {
-    id: 1711200006,
-    doctorId: 6,
-    doctorName: "Dr. Dawit Kebede",
-    doctorDepartment: "Orthopedics",
-    slot: "01:30 PM",
-    fee: 250,
-    studentName: "Yonas Mekonnen",
-    fullName: "Yonas Mekonnen",
-    studentId: "ENG/9904/14",
-    phone: "0966778899",
-    reason: "Right ankle sprain during intramural basketball tournament yesterday.",
-    status: "confirmed",
-    clinicalNotes: "",
-    createdAt: new Date(Date.now() - 3600000 * 1).toISOString(),
-  },
-];
 
 function DoctorDashboard() {
   const { user, isDoctor } = useAuth();
   const { id: urlDoctorId } = useParams();
+
+  // Resolve the clinician ID: logged-in doctor takes precedence
+  const doctorId = useMemo(() => {
+    if (isDoctor && user?.id) return Number(user.id);
+    if (urlDoctorId) return Number(urlDoctorId);
+    return null;
+  }, [isDoctor, user, urlDoctorId]);
+
+  // Fetch clinician profile dynamically from API
+  const {
+    data: doctor,
+    loading,
+    error,
+    retry,
+  } = useFetch(
+    (signal) => (doctorId ? fetchDoctorById(doctorId, { signal }) : Promise.resolve(null)),
+    [doctorId]
+  );
 
   const appointments = useAppointmentsStore((s) => s.appointments);
   const updateAppointmentStatus = useAppointmentsStore(
@@ -116,12 +37,6 @@ function DoctorDashboard() {
   const updateAppointmentNotes = useAppointmentsStore(
     (s) => s.updateAppointmentNotes
   );
-  const seedDemoAppointments = useAppointmentsStore(
-    (s) => s.seedDemoAppointments
-  );
-
-  const [doctors, setDoctors] = useState([]);
-  const [loadingDocs, setLoadingDocs] = useState(true);
 
   // Search & Filter criteria
   const [searchQuery, setSearchQuery] = useState("");
@@ -132,54 +47,15 @@ function DoctorDashboard() {
   const [editingNotesId, setEditingNotesId] = useState(null);
   const [tempNotes, setTempNotes] = useState("");
 
-  // Load doctors from API
-  useEffect(() => {
-    let active = true;
-    fetchDoctors()
-      .then((data) => {
-        if (active) {
-          setDoctors(data || []);
-          setLoadingDocs(false);
-        }
-      })
-      .catch(() => {
-        if (active) {
-          setDoctors([]);
-          setLoadingDocs(false);
-        }
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
+  // Appointments for this clinician
+  const doctorAppointments = useMemo(() => {
+    if (!doctorId) return appointments;
+    return appointments.filter((apt) => Number(apt.doctorId) === doctorId);
+  }, [appointments, doctorId]);
 
-  // Active doctor is ALWAYS the authenticated doctor if logged in as a doctor
-  const activeDoctor = useMemo(() => {
-    if (isDoctor && user) {
-      const found = doctors.find(
-        (d) => String(d.id) === String(user.id) || d.doctorId === user.doctorId
-      );
-      return found || user;
-    }
-    if (urlDoctorId) {
-      return doctors.find((d) => String(d.id) === String(urlDoctorId)) || null;
-    }
-    return null;
-  }, [isDoctor, user, urlDoctorId, doctors]);
-
-  // Selected doctor ID for appointment filtering
-  const selectedDoctorId = activeDoctor ? String(activeDoctor.id) : "all";
-
-  // Filter appointments
+  // Filtered appointments according to active filters and search
   const filteredAppointments = useMemo(() => {
-    return appointments.filter((apt) => {
-      // Doctor filter
-      if (selectedDoctorId !== "all") {
-        if (String(apt.doctorId) !== String(selectedDoctorId)) {
-          return false;
-        }
-      }
-
+    return doctorAppointments.filter((apt) => {
       // Status filter
       if (statusFilter !== "all" && (apt.status || "confirmed") !== statusFilter) {
         return false;
@@ -197,35 +73,30 @@ function DoctorDashboard() {
         const studentId = (apt.studentId || "").toLowerCase();
         const phone = (apt.phone || "").toLowerCase();
         const reason = (apt.reason || "").toLowerCase();
-        const docName = (apt.doctorName || "").toLowerCase();
 
         return (
           studentName.includes(q) ||
           studentId.includes(q) ||
           phone.includes(q) ||
-          reason.includes(q) ||
-          docName.includes(q)
+          reason.includes(q)
         );
       }
 
       return true;
     });
-  }, [appointments, selectedDoctorId, statusFilter, slotFilter, searchQuery]);
+  }, [doctorAppointments, statusFilter, slotFilter, searchQuery]);
 
   // Aggregate metrics
   const metrics = useMemo(() => {
-    const list =
-      selectedDoctorId === "all"
-        ? appointments
-        : appointments.filter((a) => String(a.doctorId) === String(selectedDoctorId));
-
-    const total = list.length;
-    const confirmed = list.filter((a) => (a.status || "confirmed") === "confirmed").length;
-    const completed = list.filter((a) => a.status === "completed").length;
-    const cancelled = list.filter((a) => a.status === "cancelled").length;
+    const total = doctorAppointments.length;
+    const confirmed = doctorAppointments.filter(
+      (a) => (a.status || "confirmed") === "confirmed"
+    ).length;
+    const completed = doctorAppointments.filter((a) => a.status === "completed").length;
+    const cancelled = doctorAppointments.filter((a) => a.status === "cancelled").length;
 
     return { total, confirmed, completed, cancelled };
-  }, [appointments, selectedDoctorId]);
+  }, [doctorAppointments]);
 
   function handleStartEditNotes(apt) {
     setEditingNotesId(apt.id);
@@ -243,12 +114,21 @@ function DoctorDashboard() {
     setTempNotes("");
   }
 
-  function handleLoadDemoData() {
-    seedDemoAppointments(DEMO_SEED_APPOINTMENTS);
+  if (loading) {
+    return <Spinner label="Loading clinic schedule & clinician profile…" />;
   }
 
-  if (loadingDocs) {
-    return <Spinner label="Loading clinic schedule & clinician profiles…" />;
+  if (error) {
+    return <ErrorNote message={error} onRetry={retry} />;
+  }
+
+  if (!doctor) {
+    return (
+      <EmptyState
+        title="Clinician profile not found"
+        message="Could not load doctor details for this account."
+      />
+    );
   }
 
   return (
@@ -257,28 +137,20 @@ function DoctorDashboard() {
       <section className="card doctor-banner">
         <div className="doctor-banner-main">
           <div className="doctor-avatar" aria-hidden="true">
-            {activeDoctor ? "👨‍⚕️" : "🏥"}
+            👨‍⚕️
           </div>
           <div>
             <div className="doctor-banner-tags">
               <span className="badge staff-badge">Staff Clinician</span>
-              {activeDoctor && (
-                <span className="badge dept-badge">{activeDoctor.department}</span>
-              )}
+              <span className="badge dept-badge">{doctor.department}</span>
             </div>
             <h2 style={{ margin: "0.25rem 0", fontSize: "1.5rem" }}>
-              {activeDoctor ? activeDoctor.name : "Campus Clinic — Doctor Portal"}
+              {doctor.name}
             </h2>
             <p className="muted" style={{ margin: 0 }}>
-              {activeDoctor ? (
-                <>
-                  {activeDoctor.title} · {activeDoctor.years} years experience · ID:{" "}
-                  <strong>{activeDoctor.doctorId || `DOC-${activeDoctor.id}`}</strong>
-                  {activeDoctor.phone ? ` · 📞 ${activeDoctor.phone}` : ""}
-                </>
-              ) : (
-                "Your scheduled student appointments and consultation queue."
-              )}
+              {doctor.title} · {doctor.years} years experience · ID:{" "}
+              <strong>{doctor.doctorId || `DOC-${doctor.id}`}</strong>
+              {doctor.phone || doctor.mobile ? ` · 📞 ${doctor.phone || doctor.mobile}` : ""}
             </p>
           </div>
         </div>
@@ -357,21 +229,11 @@ function DoctorDashboard() {
                 onChange={(e) => setSlotFilter(e.target.value)}
               >
                 <option value="all">All Slots</option>
-                <option value="08:30 AM">08:30 AM</option>
-                <option value="09:00 AM">09:00 AM</option>
-                <option value="09:30 AM">09:30 AM</option>
-                <option value="10:00 AM">10:00 AM</option>
-                <option value="10:30 AM">10:30 AM</option>
-                <option value="11:00 AM">11:00 AM</option>
-                <option value="11:30 AM">11:30 AM</option>
-                <option value="01:00 PM">01:00 PM</option>
-                <option value="01:30 PM">01:30 PM</option>
-                <option value="02:00 PM">02:00 PM</option>
-                <option value="02:30 PM">02:30 PM</option>
-                <option value="03:00 PM">03:00 PM</option>
-                <option value="03:30 PM">03:30 PM</option>
-                <option value="04:00 PM">04:00 PM</option>
-                <option value="04:30 PM">04:30 PM</option>
+                {(doctor.slots || []).map((slot) => (
+                  <option key={slot} value={slot}>
+                    {slot}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -396,22 +258,14 @@ function DoctorDashboard() {
       <section>
         {filteredAppointments.length === 0 ? (
           <EmptyState
-            title="No appointments found"
+            title="No appointments scheduled"
             message={
-              appointments.length === 0
-                ? "No appointments booked yet. Click 'Seed Demo Appointments' below to load sample patient data."
+              doctorAppointments.length === 0
+                ? "You currently have no patient appointments booked."
                 : "No appointments match your active search and filter criteria."
             }
             action={
-              appointments.length === 0 ? (
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={handleLoadDemoData}
-                >
-                  Load Sample Patient Queue
-                </button>
-              ) : (
+              (searchQuery || statusFilter !== "all" || slotFilter !== "all") ? (
                 <button
                   type="button"
                   className="btn ghost"
@@ -423,7 +277,7 @@ function DoctorDashboard() {
                 >
                   Clear Filters
                 </button>
-              )
+              ) : null
             }
           />
         ) : (
@@ -528,7 +382,7 @@ function DoctorDashboard() {
                   {/* Appointment Actions & Controls */}
                   <div className="appointment-footer">
                     <span className="fee-info">
-                      Consultation Fee: <strong>{apt.fee || 150} ETB</strong>
+                      Consultation Fee: <strong>{apt.fee || doctor.fee || 150} ETB</strong>
                     </span>
 
                     <div className="action-buttons-group">
