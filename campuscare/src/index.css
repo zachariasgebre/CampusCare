@@ -159,6 +159,133 @@ code {
   font-weight: 600;
 }
 
+/* Clickable chip button variant */
+.user-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.user-chip-btn:hover {
+  background: #dbeafe;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15);
+}
+
+.chip-caret {
+  font-size: 0.6rem;
+  opacity: 0.7;
+}
+
+/* Profile anchor — positions the popup */
+.profile-anchor {
+  position: relative;
+}
+
+/* Profile Popup Dropdown */
+.profile-popup {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 200;
+  width: 240px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 1.25rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  animation: popup-in 0.15s ease;
+}
+
+@keyframes popup-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.profile-popup-avatar {
+  font-size: 2.25rem;
+  background: var(--primary-light);
+  border: 1px solid var(--primary-border);
+  border-radius: 50%;
+  width: 3.25rem;
+  height: 3.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.25rem;
+}
+
+.profile-popup-name {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  text-align: center;
+}
+
+.profile-popup-badge {
+  display: inline-block;
+  padding: 0.15rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.profile-popup-badge.student {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+
+.profile-popup-badge.doctor {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #6ee7b7;
+}
+
+.profile-popup-grid {
+  width: 100%;
+  margin: 0.65rem 0 0.5rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.3rem 0.75rem;
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.profile-popup-grid dt {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  align-self: center;
+}
+
+.profile-popup-grid dd {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  word-break: break-all;
+}
+
+.profile-popup-logout {
+  width: 100%;
+  margin-top: 0.25rem;
+  justify-content: center;
+}
+
+
 .site-main {
   width: min(1060px, 100%);
   margin: 0 auto;
