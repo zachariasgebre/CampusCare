@@ -1,7 +1,8 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import RequireAuth from "./auth/RequireAuth";
+import RequireDoctorAuth from "./auth/RequireDoctorAuth";
 import ErrorBoundary from "./ui/ErrorBoundary";
 import Spinner from "./ui/Spinner";
 import Layout from "./Layout";
@@ -15,6 +16,9 @@ import NotFound from "./pages/NotFound";
 
 const AppointmentHistory = lazy(
   () => import("./appointments/AppointmentHistory")
+);
+const DoctorDashboard = lazy(
+  () => import("./doctors/DoctorDashboard")
 );
 
 function App() {
@@ -43,6 +47,30 @@ function App() {
                     <AppointmentHistory />
                   </Suspense>
                 }
+              />
+              <Route
+                path="doctor-dashboard"
+                element={
+                  <RequireDoctorAuth>
+                    <Suspense fallback={<Spinner label="Loading doctor dashboard…" />}>
+                      <DoctorDashboard />
+                    </Suspense>
+                  </RequireDoctorAuth>
+                }
+              />
+              <Route
+                path="doctor-dashboard/:id"
+                element={
+                  <RequireDoctorAuth>
+                    <Suspense fallback={<Spinner label="Loading doctor dashboard…" />}>
+                      <DoctorDashboard />
+                    </Suspense>
+                  </RequireDoctorAuth>
+                }
+              />
+              <Route
+                path="doctor-login"
+                element={<Navigate to="/login?role=doctor" replace />}
               />
               <Route path="login" element={<Login />} />
               <Route path="*" element={<NotFound />} />

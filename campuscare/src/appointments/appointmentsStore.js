@@ -12,10 +12,25 @@ export const useAppointmentsStore = create(
             {
               ...appointment,
               id: Date.now(),
+              status: appointment.status || "confirmed",
               createdAt: new Date().toISOString(),
             },
             ...state.appointments,
           ],
+        })),
+
+      updateAppointmentStatus: (id, status) =>
+        set((state) => ({
+          appointments: state.appointments.map((apt) =>
+            apt.id === id ? { ...apt, status } : apt
+          ),
+        })),
+
+      updateAppointmentNotes: (id, notes) =>
+        set((state) => ({
+          appointments: state.appointments.map((apt) =>
+            apt.id === id ? { ...apt, clinicalNotes: notes } : apt
+          ),
         })),
 
       clearAppointments: () => set({ appointments: [] }),

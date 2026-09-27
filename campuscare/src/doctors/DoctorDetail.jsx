@@ -37,6 +37,8 @@ function DoctorDetail() {
       <h2>{doctor.name}</h2>
       <p className="muted">
         {doctor.title} · {doctor.years} years · {doctor.fee} ETB consult
+        {doctor.doctorId ? ` · ID: ${doctor.doctorId}` : ""}
+        {doctor.mobile || doctor.phone ? ` · 📞 ${doctor.mobile || doctor.phone}` : ""}
       </p>
       <p>{doctor.bio}</p>
 
@@ -55,11 +57,6 @@ function DoctorDetail() {
           Back to list
         </Link>
       </div>
-
-      <p className="hint">
-        Tip: <code>useParams()</code> gives a string — we convert with{" "}
-        <code>Number(id)</code>.
-      </p>
     </section>
   );
 }
