@@ -53,9 +53,6 @@ function DoctorDetail() {
         <Link className="btn" to={`/booking/${doctor.id}`}>
           Book this doctor
         </Link>
-        <Link className="btn ghost" to={`/doctor-dashboard/${doctor.id}`}>
-          View Doctor Schedule
-        </Link>
         <Link className="btn ghost" to="/doctors">
           Back to list
         </Link>

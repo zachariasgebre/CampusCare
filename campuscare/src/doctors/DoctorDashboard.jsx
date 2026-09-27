@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { useAppointmentsStore } from "../appointments/appointmentsStore";
 import { fetchDoctors } from "../api/doctors";
@@ -108,7 +108,6 @@ const DEMO_SEED_APPOINTMENTS = [
 function DoctorDashboard() {
   const { user, isDoctor } = useAuth();
   const { id: urlDoctorId } = useParams();
-  const navigate = useNavigate();
 
   const appointments = useAppointmentsStore((s) => s.appointments);
   const updateAppointmentStatus = useAppointmentsStore(
@@ -154,18 +153,22 @@ function DoctorDashboard() {
     };
   }, []);
 
-  // Selected doctor filter derived from URL or logged-in doctor
-  const selectedDoctorId = urlDoctorId
-    ? String(urlDoctorId)
-    : isDoctor && user?.id
-    ? String(user.id)
-    : "all";
-
-  // Active doctor object
+  // Active doctor is ALWAYS the authenticated doctor if logged in as a doctor
   const activeDoctor = useMemo(() => {
-    if (selectedDoctorId === "all") return null;
-    return doctors.find((d) => String(d.id) === String(selectedDoctorId)) || null;
-  }, [selectedDoctorId, doctors]);
+    if (isDoctor && user) {
+      const found = doctors.find(
+        (d) => String(d.id) === String(user.id) || d.doctorId === user.doctorId
+      );
+      return found || user;
+    }
+    if (urlDoctorId) {
+      return doctors.find((d) => String(d.id) === String(urlDoctorId)) || null;
+    }
+    return null;
+  }, [isDoctor, user, urlDoctorId, doctors]);
+
+  // Selected doctor ID for appointment filtering
+  const selectedDoctorId = activeDoctor ? String(activeDoctor.id) : "all";
 
   // Filter appointments
   const filteredAppointments = useMemo(() => {
@@ -220,21 +223,9 @@ function DoctorDashboard() {
     const confirmed = list.filter((a) => (a.status || "confirmed") === "confirmed").length;
     const completed = list.filter((a) => a.status === "completed").length;
     const cancelled = list.filter((a) => a.status === "cancelled").length;
-    const totalRevenue = list
-      .filter((a) => a.status !== "cancelled")
-      .reduce((sum, a) => sum + (Number(a.fee) || 0), 0);
 
-    return { total, confirmed, completed, cancelled, totalRevenue };
+    return { total, confirmed, completed, cancelled };
   }, [appointments, selectedDoctorId]);
-
-  function handleDoctorChange(e) {
-    const val = e.target.value;
-    if (val === "all") {
-      navigate("/doctor-dashboard", { replace: true });
-    } else {
-      navigate(`/doctor-dashboard/${val}`, { replace: true });
-    }
-  }
 
   function handleStartEditNotes(apt) {
     setEditingNotesId(apt.id);
@@ -276,7 +267,7 @@ function DoctorDashboard() {
               )}
             </div>
             <h2 style={{ margin: "0.25rem 0", fontSize: "1.5rem" }}>
-              {activeDoctor ? activeDoctor.name : "Campus Clinic — All Doctors Roster"}
+              {activeDoctor ? activeDoctor.name : "Campus Clinic — Doctor Portal"}
             </h2>
             <p className="muted" style={{ margin: 0 }}>
               {activeDoctor ? (
@@ -286,49 +277,9 @@ function DoctorDashboard() {
                   {activeDoctor.phone ? ` · 📞 ${activeDoctor.phone}` : ""}
                 </>
               ) : (
-                "Comprehensive student appointment queue across all clinic practitioners."
+                "Your scheduled student appointments and consultation queue."
               )}
             </p>
-          </div>
-        </div>
-
-        <div className="doctor-banner-controls">
-          <label htmlFor="doctorSelect" className="control-label">
-            Switch Doctor View
-          </label>
-          <select
-            id="doctorSelect"
-            value={selectedDoctorId}
-            onChange={handleDoctorChange}
-            className="doctor-select-input"
-          >
-            <option value="all">🌐 All Clinicians ({appointments.length} total)</option>
-            {doctors.map((doc) => {
-              const count = appointments.filter(
-                (a) => String(a.doctorId) === String(doc.id)
-              ).length;
-              return (
-                <option key={doc.id} value={String(doc.id)}>
-                  {doc.name} — {doc.department} ({count} booked)
-                </option>
-              );
-            })}
-          </select>
-
-          <div className="banner-quick-actions">
-            {appointments.length === 0 && (
-              <button
-                type="button"
-                className="btn small"
-                onClick={handleLoadDemoData}
-                title="Populate sample student appointments to test dashboard"
-              >
-                + Seed Demo Appointments
-              </button>
-            )}
-            <Link to="/doctors" className="btn small ghost">
-              Browse Doctors
-            </Link>
           </div>
         </div>
       </section>
@@ -356,16 +307,6 @@ function DoctorDashboard() {
           <div className="metric-content">
             <span className="metric-label">Completed Consults</span>
             <span className="metric-value success">{metrics.completed}</span>
-          </div>
-        </div>
-
-        <div className="card metric-card">
-          <div className="metric-icon">💵</div>
-          <div className="metric-content">
-            <span className="metric-label">Consultation Value</span>
-            <span className="metric-value price-metric">
-              {metrics.totalRevenue} ETB
-            </span>
           </div>
         </div>
       </section>
@@ -458,7 +399,7 @@ function DoctorDashboard() {
             title="No appointments found"
             message={
               appointments.length === 0
-                ? "No appointments booked yet. Click 'Seed Demo Appointments' above to load sample patient data."
+                ? "No appointments booked yet. Click 'Seed Demo Appointments' below to load sample patient data."
                 : "No appointments match your active search and filter criteria."
             }
             action={
@@ -533,16 +474,6 @@ function DoctorDashboard() {
                       </span>
                     </div>
                   </div>
-
-                  {/* Clinician line if in all doctors view */}
-                  {selectedDoctorId === "all" && (
-                    <div>
-                      <span className="assigned-doctor-line">
-                        Assigned Clinician: <strong>{apt.doctorName}</strong> (
-                        {apt.doctorDepartment})
-                      </span>
-                    </div>
-                  )}
 
                   {/* Visit Reason and Clinical Notes */}
                   <div className="appointment-body">

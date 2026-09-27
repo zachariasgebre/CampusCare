@@ -160,40 +160,7 @@
   border: 1px solid var(--primary-border);
 }
 
-.doctor-banner-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  min-width: 260px;
-}
 
-.control-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.doctor-select-input {
-  padding: 0.55rem 0.85rem;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background: #ffffff;
-  font-weight: 600;
-  color: var(--text-dark);
-}
-
-.doctor-select-input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-}
-
-.banner-quick-actions {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
 
 /* KPI Metrics Grid */
 .dashboard-metrics-grid {
@@ -247,9 +214,7 @@
   color: #10b981;
 }
 
-.metric-value.price-metric {
-  color: #0284c7;
-}
+
 
 /* Search & Filter Controls */
 .dashboard-controls-card {
