@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import { fetchDoctors, isValidEthiopianPhone } from "../api/doctors";
 
@@ -14,7 +14,7 @@ function normalizeDocId(id) {
 }
 
 function Login() {
-  const { user, isDoctor, login, loginDoctor } = useAuth();
+  const { user, isDoctor, login, loginDoctor, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -28,10 +28,7 @@ function Login() {
   });
 
   const studentFrom = location.state?.from?.pathname || "/doctors";
-  const doctorFrom =
-    location.state?.from?.pathname && location.state.from.pathname !== "/login"
-      ? location.state.from.pathname
-      : "/doctor-dashboard";
+  const doctorFrom = "/doctor-dashboard";
 
   // Doctors list for doctor verification
   const [doctors, setDoctors] = useState([]);
@@ -67,10 +64,7 @@ function Login() {
   const [doctorError, setDoctorError] = useState("");
   const [doctorSubmitting, setDoctorSubmitting] = useState(false);
 
-  // If already logged in, redirect to target
-  if (user) {
-    return <Navigate to={isDoctor ? doctorFrom : studentFrom} replace />;
-  }
+
 
   // Validation
   const studentPhoneOk = isValidEthiopianPhone(studentForm.phone);
@@ -112,14 +106,20 @@ function Login() {
     const inputPhone = normalizePhone(doctorForm.phone);
 
     const matched = doctors.find((doc) => {
-      const docMatch =
-        normalizeDocId(doc.doctorId) === inputId ||
+      const docIdNorm = normalizeDocId(doc.doctorId);
+      const docIdNum = String(doc.id);
+      const docIdRaw = docIdNorm.replace(/^DOC-?/, "");
+      const inputRaw = inputId.replace(/^DOC-?/, "");
+      const idMatch =
+        docIdNorm === inputId ||
+        docIdNum === inputId ||
+        docIdRaw === inputRaw ||
         `DOC-${doc.id}` === inputId ||
-        String(doc.id) === inputId;
+        doc.name.toLowerCase().includes(doctorForm.doctorId.trim().toLowerCase());
       const phoneMatch =
         normalizePhone(doc.phone) === inputPhone ||
         normalizePhone(doc.mobile) === inputPhone;
-      return docMatch && phoneMatch;
+      return idMatch && phoneMatch;
     });
 
     if (matched) {
@@ -141,6 +141,35 @@ function Login() {
   return (
     <div className="login-page-wrapper">
       <section className="card login-card">
+        {user && (
+          <div
+            style={{
+              padding: "0.65rem 0.9rem",
+              marginBottom: "1rem",
+              background: "#eff6ff",
+              border: "1px solid #bfdbfe",
+              borderRadius: "8px",
+              fontSize: "0.85rem",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "0.5rem",
+            }}
+          >
+            <span>
+              Signed in as <strong>{user.name}</strong> ({isDoctor ? "Doctor" : "Student"}).
+            </span>
+            <button
+              type="button"
+              className="btn small ghost"
+              onClick={logout}
+              style={{ padding: "0.2rem 0.5rem", fontSize: "0.75rem" }}
+            >
+              Sign out
+            </button>
+          </div>
+        )}
+
         {/* Segmented Role Selector */}
         <div className="login-role-tabs">
           <button
