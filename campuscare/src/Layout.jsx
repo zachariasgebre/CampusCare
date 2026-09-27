@@ -51,7 +51,7 @@ function Layout() {
       </main>
 
       <footer className="site-footer">
-        <p>CampusCare · Day 35 mini-project · fees in ETB</p>
+        <p>CampusCare · React mini-project · fees in ETB</p>
       </footer>
     </div>
   );
