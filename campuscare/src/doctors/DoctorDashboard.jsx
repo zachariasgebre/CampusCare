@@ -8,6 +8,26 @@ import Spinner from "../ui/Spinner";
 import ErrorNote from "../ui/ErrorNote";
 import EmptyState from "../ui/EmptyState";
 
+const METRIC_CARDS = [
+  { label: "Total Appointments", key: "total", icon: "📅", className: "" },
+  { label: "Confirmed / Upcoming", key: "confirmed", icon: "⏳", className: "highlight" },
+  { label: "Completed Consults", key: "completed", icon: "✅", className: "success" },
+];
+
+const STATUS_CONFIG = {
+  confirmed: { label: "⏳ Confirmed", className: "confirmed" },
+  completed: { label: "✅ Completed", className: "completed" },
+  cancelled: { label: "✕ Cancelled", className: "cancelled" },
+};
+
+function getPatientName(apt) {
+  return apt.fullName || apt.studentName || "Anonymous Student";
+}
+
+function getPatientInitial(apt) {
+  return getPatientName(apt).charAt(0).toUpperCase();
+}
+
 function DoctorDashboard() {
   const { user, isDoctor } = useAuth();
   const { id: urlDoctorId } = useParams();
@@ -19,9 +39,9 @@ function DoctorDashboard() {
     return null;
   }, [isDoctor, user, urlDoctorId]);
 
-  // Fetch clinician profile dynamically from API
+  // Fetch / synchronize clinician profile from API
   const {
-    data: doctor,
+    data: fetchedDoctor,
     loading,
     error,
     retry,
@@ -29,6 +49,13 @@ function DoctorDashboard() {
     (signal) => (doctorId ? fetchDoctorById(doctorId, { signal }) : Promise.resolve(null)),
     [doctorId]
   );
+
+  // Active doctor merges authenticated session with fetched data
+  const doctor = useMemo(() => {
+    if (fetchedDoctor) return fetchedDoctor;
+    if (isDoctor && user && Number(user.id) === doctorId) return user;
+    return null;
+  }, [fetchedDoctor, isDoctor, user, doctorId]);
 
   const appointments = useAppointmentsStore((s) => s.appointments);
   const updateAppointmentStatus = useAppointmentsStore(
@@ -55,6 +82,8 @@ function DoctorDashboard() {
 
   // Filtered appointments according to active filters and search
   const filteredAppointments = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+
     return doctorAppointments.filter((apt) => {
       // Status filter
       if (statusFilter !== "all" && (apt.status || "confirmed") !== statusFilter) {
@@ -67,9 +96,8 @@ function DoctorDashboard() {
       }
 
       // Search query (student name, ID, phone, reason)
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        const studentName = (apt.studentName || apt.fullName || "").toLowerCase();
+      if (q) {
+        const studentName = getPatientName(apt).toLowerCase();
         const studentId = (apt.studentId || "").toLowerCase();
         const phone = (apt.phone || "").toLowerCase();
         const reason = (apt.reason || "").toLowerCase();
@@ -98,6 +126,12 @@ function DoctorDashboard() {
     return { total, confirmed, completed, cancelled };
   }, [doctorAppointments]);
 
+  function handleResetFilters() {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setSlotFilter("all");
+  }
+
   function handleStartEditNotes(apt) {
     setEditingNotesId(apt.id);
     setTempNotes(apt.clinicalNotes || "");
@@ -114,11 +148,11 @@ function DoctorDashboard() {
     setTempNotes("");
   }
 
-  if (loading) {
+  if (loading && !doctor) {
     return <Spinner label="Loading clinic schedule & clinician profile…" />;
   }
 
-  if (error) {
+  if (error && !doctor) {
     return <ErrorNote message={error} onRetry={retry} />;
   }
 
@@ -130,6 +164,8 @@ function DoctorDashboard() {
       />
     );
   }
+
+  const hasActiveFilters = searchQuery.trim() !== "" || statusFilter !== "all" || slotFilter !== "all";
 
   return (
     <div className="doctor-dashboard-container">
@@ -158,29 +194,15 @@ function DoctorDashboard() {
 
       {/* KPI Metrics Summary Cards */}
       <section className="dashboard-metrics-grid">
-        <div className="card metric-card">
-          <div className="metric-icon">📅</div>
-          <div className="metric-content">
-            <span className="metric-label">Total Appointments</span>
-            <span className="metric-value">{metrics.total}</span>
+        {METRIC_CARDS.map(({ label, key, icon, className }) => (
+          <div key={key} className="card metric-card">
+            <div className="metric-icon">{icon}</div>
+            <div className="metric-content">
+              <span className="metric-label">{label}</span>
+              <span className={`metric-value ${className}`.trim()}>{metrics[key]}</span>
+            </div>
           </div>
-        </div>
-
-        <div className="card metric-card">
-          <div className="metric-icon">⏳</div>
-          <div className="metric-content">
-            <span className="metric-label">Confirmed / Upcoming</span>
-            <span className="metric-value highlight">{metrics.confirmed}</span>
-          </div>
-        </div>
-
-        <div className="card metric-card">
-          <div className="metric-icon">✅</div>
-          <div className="metric-content">
-            <span className="metric-label">Completed Consults</span>
-            <span className="metric-value success">{metrics.completed}</span>
-          </div>
-        </div>
+        ))}
       </section>
 
       {/* Search & Filter Bar */}
@@ -237,15 +259,11 @@ function DoctorDashboard() {
               </select>
             </div>
 
-            {(searchQuery || statusFilter !== "all" || slotFilter !== "all") && (
+            {hasActiveFilters && (
               <button
                 type="button"
                 className="btn small ghost"
-                onClick={() => {
-                  setSearchQuery("");
-                  setStatusFilter("all");
-                  setSlotFilter("all");
-                }}
+                onClick={handleResetFilters}
               >
                 Reset Filters
               </button>
@@ -265,15 +283,11 @@ function DoctorDashboard() {
                 : "No appointments match your active search and filter criteria."
             }
             action={
-              (searchQuery || statusFilter !== "all" || slotFilter !== "all") ? (
+              hasActiveFilters ? (
                 <button
                   type="button"
                   className="btn ghost"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setStatusFilter("all");
-                    setSlotFilter("all");
-                  }}
+                  onClick={handleResetFilters}
                 >
                   Clear Filters
                 </button>
@@ -285,6 +299,9 @@ function DoctorDashboard() {
             {filteredAppointments.map((apt) => {
               const currentStatus = apt.status || "confirmed";
               const isEditing = editingNotesId === apt.id;
+              const statusMeta = STATUS_CONFIG[currentStatus] || { label: currentStatus, className: currentStatus };
+              const patientName = getPatientName(apt);
+              const patientInitial = getPatientInitial(apt);
 
               return (
                 <article
@@ -294,11 +311,11 @@ function DoctorDashboard() {
                   <div className="appointment-header">
                     <div className="patient-identity">
                       <div className="patient-avatar" aria-hidden="true">
-                        {(apt.studentName || apt.fullName || "S").charAt(0).toUpperCase()}
+                        {patientInitial}
                       </div>
                       <div>
                         <h4 className="patient-name">
-                          {apt.studentName || apt.fullName || "Anonymous Student"}
+                          {patientName}
                         </h4>
                         <div className="patient-meta">
                           {apt.studentId && (
@@ -321,10 +338,8 @@ function DoctorDashboard() {
 
                     <div className="appointment-status-block">
                       <span className="slot-badge">⏰ {apt.slot}</span>
-                      <span className={`status-badge ${currentStatus}`}>
-                        {currentStatus === "confirmed" && "⏳ Confirmed"}
-                        {currentStatus === "completed" && "✅ Completed"}
-                        {currentStatus === "cancelled" && "✕ Cancelled"}
+                      <span className={`status-badge ${statusMeta.className}`}>
+                        {statusMeta.label}
                       </span>
                     </div>
                   </div>

@@ -34,6 +34,7 @@ export function AuthProvider({ children }) {
       },
       loginDoctor: (doctorProfile) => {
         const next = {
+          ...doctorProfile,
           role: "doctor",
           id: doctorProfile.id,
           doctorId: doctorProfile.doctorId || `DOC-${doctorProfile.id}`,
