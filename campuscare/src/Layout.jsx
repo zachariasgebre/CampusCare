@@ -135,7 +135,17 @@ function Layout() {
       </main>
 
       <footer className="site-footer">
-        <p>CampusCare · Student Healthcare Clinic · Fees in ETB</p>
+        <div className="footer-content">
+          <p>
+            <strong>CampusCare</strong> · Student Healthcare Clinic · Fees in ETB
+          </p>
+          <p className="footer-subtext">
+            Block B, Student Center | Hours: Mon–Fri 8AM–6PM | Emergency: 911 / 933
+          </p>
+          <p className="footer-copy">
+            © {new Date().getFullYear()} CampusCare System
+          </p>
+        </div>
       </footer>
     </div>
   );
